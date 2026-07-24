@@ -49,6 +49,6 @@ jobs:
             const m = html.match(/const QUESTIONS = (\[.*?\]);/s);
             if (!m) throw new Error('QUESTIONS not found');
             const qs = JSON.parse(m[1]);
-            if (qs.length < 60) throw new Error('Expected at least 60 questions, got ' + qs.length);
+            if (qs.length < 120) throw new Error('Expected at least 120 questions, got ' + qs.length);
             console.log('OK:', qs.length, 'questions');
           "
