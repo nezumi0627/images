@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>KCS北九州 奨学生試験 本気対策</title>
+  <meta name="description" content="KCS北九州情報専門学校 奨学生試験（国語・数学・英語）本気対策サイト">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            kcs: { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            surface: { 800: '#1a1f2e', 900: '#0f1219', 950: '#080a0f' }
+          },
+          fontFamily: { sans: ['"Noto Sans JP"', 'system-ui', 'sans-serif'] },
+          animation: { 'pulse-slow': 'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite', 'fade-in': 'fadeIn 0.4s ease-out' },
+          keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Noto Sans JP', system-ui, sans-serif; }
+    .glass { background: rgba(26,31,46,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+    .choice-btn { transition: all 0.2s ease; }
+    .choice-btn:hover:not(:disabled) { transform: translateX(4px); border-color: rgba(96,165,250,0.5); }
+    .choice-btn.selected { border-color: #3b82f6; background: rgba(59,130,246,0.15); }
+    .choice-btn.correct { border-color: #22c55e !important; background: rgba(34,197,94,0.15) !important; }
+    .choice-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.15) !important; }
+    .progress-glow { box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+    .timer-warning { animation: pulse 1s infinite; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f1219; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .question-text { white-space: pre-wrap; line-height: 1.8; }
+  </style>
+</head>
+<body class="bg-surface-950 text-gray-100 min-h-screen">
+
+<div id="app" class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="glass sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+    <button id="btn-home" class="flex items-center gap-2 text-kcs-400 font-bold text-sm sm:text-base hover:text-kcs-500 transition">
+      <span class="text-xl">🎓</span>
+      <span class="hidden sm:inline">KCS奨学生試験 本気対策</span>
+      <span class="sm:hidden">KCS対策</span>
+    </button>
+    <div id="header-stats" class="flex items-center gap-3 text-xs sm:text-sm text-gray-400"></div>
+  </header>
+
+  <main id="main" class="flex-1 px-4 py-6 max-w-3xl mx-auto w-full"></main>
+
+  <footer class="text-center text-xs text-gray-600 py-4 px-4">
+    KCS北九州情報専門学校 奨学生試験対策 | 頑張れ！あなたならできる！
+  </footer>
+</div>
+
+<script>
+const QUESTIONS = [{"id": "jp-001", "subject": "japanese", "category": "漢字・読み", "difficulty": "easy", "type": "multiple_choice", "question": "次の漢字の読み方として正しいものを選びなさい。\n「慎重」", "choices": ["しんちょう", "じんちょう", "しんじゅう", "ちんじょう"], "answer": "しんちょう", "explanation": "「慎重（しんちょう）」は、物事を丁寧に考えて行動することを意味します。「重」は「じゅう」ではなく「ちょう」と読む熟語が多く、入試では「慎重」「重量」「重視」などの読みが頻出です。"}, {"id": "jp-002", "subject": "japanese", "category": "漢字・読み", "difficulty": "standard", "type": "multiple_choice", "question": "次の漢字の読み方として正しいものを選びなさい。\n「妥協」", "choices": ["だきょう", "だきょうう", "たきょう", "だっきょう"], "answer": "だきょう", "explanation": "「妥協（だきょう）」は、互いに譲り合って話をまとめることです。「妥」は「だ」、「協」は「きょう」と読みます。似た語に「妥結（だけつ）」がありますが、読みが異なるので注意が必要です。"}, {"id": "jp-003", "subject": "japanese", "category": "漢字・書き", "difficulty": "easy", "type": "multiple_choice", "question": "次のひらがなを漢字に直したとき、正しいものを選びなさい。\n「きょうりょく」", "choices": ["協力", "強力", "共力", "競力"], "answer": "協力", "explanation": "「協力」は、力を合わせて物事に取り組むことを意味します。「強力」は力が強いこと、「共力」という熟語は一般的ではなく、「競力」は競争力の意味です。文脈によっては「強力」も正しい読みですが、単独の「きょうりょく」は「協力」が最も一般的です。"}, {"id": "jp-004", "subject": "japanese", "category": "漢字・書き", "difficulty": "standard", "type": "descriptive", "question": "次の文の（　）に入る漢字を書きなさい。\n「彼は困難な状況にも（けんじつ）に取り組んだ。」", "choices": null, "answer": "堅実", "explanation": "「堅実（けんじつ）」は、しっかりとした態度で着実に物事を行う様子を表します。「検実」は誤字です。入試では「堅実な経営」「堅実な生活」などの表現がよく出題されます。"}, {"id": "jp-005", "subject": "japanese", "category": "語彙", "difficulty": "easy", "type": "multiple_choice", "question": "「鋭い」の意味として最も適切なものを選びなさい。", "choices": ["とても速い", "感覚や判断力がすばやく正確である", "とても硬い", "とても深い"], "answer": "感覚や判断力がすばやく正確である", "explanation": "「鋭い」は、刃物の切れ味のよさを表すほか、「鋭い観察力」「鋭い質問」など、感覚や思考力がすばやく正確であることを表す形容詞として頻出です。"}, {"id": "jp-006", "subject": "japanese", "category": "語彙", "difficulty": "standard", "type": "multiple_choice", "question": "次の語と意味が最も近いものを選びなさい。\n「顕著」", "choices": ["目立ってはっきりしている", "静かで目立たない", "一時的な", "複雑でわかりにくい"], "answer": "目立ってはっきりしている", "explanation": "「顕著（けんちょ）」は、はっきりと目立つことを意味する形容動詞です。「顕著な成果」「顕著な変化」などの形で使われます。対義語的なイメージは「微細」「不明瞭」です。"}, {"id": "jp-007", "subject": "japanese", "category": "慣用句・ことわざ", "difficulty": "easy", "type": "multiple_choice", "question": "「石の上にも三年」の意味として正しいものを選びなさい。", "choices": ["石は三年で風化する", "何かを続ければ、やがて成果が出る", "三年間は動いてはいけない", "石の上で勉強するとよい"], "answer": "何かを続ければ、やがて成果が出る", "explanation": "このことわざは、辛抱強く続ければ必ず良い結果が得られるという教訓を表します。入試ではことわざの意味を問う問題や、文章の主題と結びつける読解問題が出題されます。"}, {"id": "jp-008", "subject": "japanese", "category": "慣用句・ことわざ", "difficulty": "standard", "type": "multiple_choice", "question": "「棚から牡丹餅」が表す意味として正しいものを選びなさい。", "choices": ["思いがけない幸運な出来事", "努力の末に得た成功", "計画通りに進んだ結果", "苦労して作ったお菓子"], "answer": "思いがけない幸運な出来事", "explanation": "「棚から牡丹餅（ぼたもち）」は、努力もせずに思いがけない幸運が訪れることを意味する慣用句です。類似表現に「棚ぼた」があります。読解では本文中の慣用句の意味を問う設問が多いです。"}, {"id": "jp-009", "subject": "japanese", "category": "敬語", "difficulty": "standard", "type": "multiple_choice", "question": "次の文の（　）に入る敬語表現として最も適切なものを選びなさい。\n「先生が（　　　）。」", "choices": ["おっしゃいました", "申しました", "ご覧になりました", "いただきました"], "answer": "おっしゃいました", "explanation": "目上の人（先生）の「言う」は尊敬語の「おっしゃる」にします。「申す」は謙譲語、「ご覧になる」は「見る」の尊敬語、「いただく」は謙譲語です。敬語問題では、動作の主体が誰かを正確に判断することが重要です。"}, {"id": "jp-010", "subject": "japanese", "category": "敬語", "difficulty": "easy", "type": "multiple_choice", "question": "次のうち、謙譲語として正しいものを選びなさい。", "choices": ["参る", "いらっしゃる", "おいでになる", "なさる"], "answer": "参る", "explanation": "「参る」は「行く・来る」の謙譲語です。「いらっしゃる」「おいでになる」「なさる」はいずれも尊敬語です。公立入試では尊敬語・謙譲語・丁寧語の区別が基本問題として頻出します。"}, {"id": "jp-011", "subject": "japanese", "category": "文法・品詞", "difficulty": "easy", "type": "multiple_choice", "question": "次の文の下線部の品詞を選びなさい。\n「美しい<u>花</u>が咲いている。」", "choices": ["名詞", "動詞", "形容詞", "副詞"], "answer": "名詞", "explanation": "「花」は物の名前を表す語であり、名詞です。「美しい」は形容詞で「花」を修飾しています。入試では、文の中での働きに注目して品詞を判断する問題が出されます。"}, {"id": "jp-012", "subject": "japanese", "category": "文法・接続", "difficulty": "standard", "type": "multiple_choice", "question": "次の文の（　）に入る接続詞として最も適切なものを選びなさい。\n「雨が降り始めた。（　　　）、試合は中止になった。」", "choices": ["したがって", "しかし", "あるいは", "ところが"], "answer": "したがって", "explanation": "前の文が原因・理由、後の文がその結果を表すため、因果関係を示す「したがって」が適切です。「しかし」「ところが」は逆接、「あるいは」は選択を表します。"}, {"id": "jp-013", "subject": "japanese", "category": "現代文・読解", "difficulty": "standard", "type": "multiple_choice", "question": "次の文章を読み、筆者の主張として最も適切なものを選びなさい。\n\n「新しい技術は私たちの生活を便利にする一方で、使い方を誤れば大きな問題を引き起こす。大切なのは、技術を恐れるのではなく、正しく学び、ルールを守って使うことだ。」", "choices": ["新しい技術は使わない方がよい", "技術は正しく学び、ルールを守って使うべきだ", "技術の進歩は必ず問題を起こす", "ルールよりも技術の発展が優先される"], "answer": "技術は正しく学び、ルールを守って使うべきだ", "explanation": "筆者は技術の便利さを認めつつ、誤用の危険性に触れ、正しい学び方とルールの遵守を主張しています。読解では文末や接続詞（「大切なのは」）に主張が示されることが多いです。"}, {"id": "jp-014", "subject": "japanese", "category": "現代文・読解", "difficulty": "easy", "type": "multiple_choice", "question": "次の文章の内容として正しいものを選びなさい。\n\n「地域の清掃活動に参加した。最初は大変だと思ったが、仲間と話しながら作業するうちに、ゴミが減っていく様子を見て達成感を覚えた。」", "choices": ["最初から楽しかった", "一人で作業した", "活動を通じて達成感を得た", "ゴミは減らなかった"], "answer": "活動を通じて達成感を得た", "explanation": "本文では「最初は大変だと思った」とあり、最初から楽しかったわけではありません。「仲間と話しながら」とあるので一人ではなく、「ゴミが減っていく様子を見て達成感を覚えた」と明記されています。事実確認型の読解は入試の基本です。"}, {"id": "jp-015", "subject": "japanese", "category": "現代文・読解", "difficulty": "standard", "type": "multiple_choice", "question": "次の文中の「それ」が指す内容として最も適切なものを選びなさい。\n\n「彼は毎日練習を重ねた。その結果、大会で好成績を収めることができた。」", "choices": ["大会で好成績を収めたこと", "毎日練習を重ねたこと", "練習と大会の両方", "好成績を収めるという目標"], "answer": "毎日練習を重ねたこと", "explanation": "「その結果」の「それ」は直前の内容を受け、原因となった「毎日練習を重ねたこと」を指します。指示語の内容を問う問題は、前後の文脈を丁寧に読むことが求められます。"}, {"id": "jp-016", "subject": "japanese", "category": "語彙・対義語", "difficulty": "easy", "type": "multiple_choice", "question": "「拡大」の対義語として最も適切なものを選びなさい。", "choices": ["縮小", "発展", "増加", "拡張"], "answer": "縮小", "explanation": "「拡大」は広げること、「縮小」は縮めることで、意味が正反対の関係にあります。「発展」「増加」「拡張」は拡大と近い意味を持つ語です。"}, {"id": "jp-017", "subject": "japanese", "category": "漢字・読み", "difficulty": "easy", "type": "multiple_choice", "question": "次の漢字の読み方として正しいものを選びなさい。\n「貢献」", "choices": ["こうけん", "こうげん", "くげん", "こうかん"], "answer": "こうけん", "explanation": "「貢献（こうけん）」は、社会や団体のために力を尽くすことを意味します。「貢」は「こう」、「献」は「けん」と読みます。奨学金試験でも社会貢献に関する語彙は頻出です。"}, {"id": "jp-018", "subject": "japanese", "category": "語彙・類義語", "difficulty": "standard", "type": "multiple_choice", "question": "次の語のうち、「調査」と意味が最も近いものを選びなさい。", "choices": ["研究", "捜索", "観察", "実験"], "answer": "捜索", "explanation": "「調査」は、事情や事実を調べることです。「捜索」も探し調べる意味で近いです。「研究」は学問的に深く調べること、「観察」は見て調べること、「実験」は試して確かめることで、意味の焦点が異なります。"}, {"id": "jp-019", "subject": "japanese", "category": "現代文・読解", "difficulty": "standard", "type": "multiple_choice", "question": "次の文章の段落の役割として最も適切なものを選びなさい。\n\n「近年、読書離れが問題となっている。一方で、電子書籍の利用者は増加している。このように、読む手段は多様化している。」", "choices": ["具体例を示している", "問題と現状を対比して提示している", "筆者の結論を述べている", "反対意見を紹介している"], "answer": "問題と現状を対比して提示している", "explanation": "「読書離れ」という問題と「電子書籍の増加」という現状を「一方で」で対比し、最後に「読む手段は多様化している」とまとめています。段落の役割を問う問題は論理構造の理解を測ります。"}, {"id": "jp-020", "subject": "japanese", "category": "文法・文の成分", "difficulty": "standard", "type": "multiple_choice", "question": "次の文の述語として正しいものを選びなさい。\n「彼女は昨日、図書館で本を二冊借りた。」", "choices": ["彼女", "図書館で", "本を二冊", "借りた"], "answer": "借りた", "explanation": "述語は文の中心となる動作や状態を表す語です。この文では「借りた」が動作を表し述語となります。「彼女」は主語、「図書館で」は場所の修飾語、「本を二冊」は目的語です。"}, {"id": "jp-021", "subject": "japanese", "category": "漢字・書き", "difficulty": "easy", "type": "multiple_choice", "question": "次のひらがなを漢字に直したとき、正しいものを選びなさい。\n「しゅうかん」", "choices": ["習慣", "週間", "修館", "集管"], "answer": "習慣", "explanation": "文脈なしで「しゅうかん」と読む場合、最も一般的なのは「習慣（生活の仕方）」です。「週間」も同じ読みですが、入試では文脈付きで出題されることが多く、「毎朝走る習慣」などの例文とセットで覚えるとよいでしょう。"}, {"id": "jp-022", "subject": "japanese", "category": "語彙", "difficulty": "easy", "type": "multiple_choice", "question": "「真剣」の使い方として正しいものを選びなさい。", "choices": ["真剣な冗談を言った", "真剣に勉強に取り組む", "真剣な色をしている", "真剣に走り回った"], "answer": "真剣に勉強に取り組む", "explanation": "「真剣」は、本気で真面目な様子を表します。「真剣に勉強に取り組む」は自然な用法です。「真剣な冗談」は矛盾、「真剣な色」は不自然、「真剣に走り回る」は通常「必死に」などが適切です。"}, {"id": "jp-023", "subject": "japanese", "category": "現代文・読解", "difficulty": "easy", "type": "multiple_choice", "question": "次の文章の要旨として最も適切なものを選びなさい。\n\n「失敗は誰にでもある。大切なのは、失敗から何を学べるかだ。同じ間違いを繰り返さなければ、失敗は成長の糧となる。」", "choices": ["失敗は避けるべきだ", "失敗から学び、成長につなげることが大切だ", "失敗は恥ずかしいことだ", "失敗は繰り返して覚えるべきだ"], "answer": "失敗から学び、成長につなげることが大切だ", "explanation": "筆者は失敗を否定せず、「失敗から何を学べるか」「成長の糧となる」と述べています。要旨問題では、筆者が最も伝えたいメッセージを選びます。"}, {"id": "jp-024", "subject": "japanese", "category": "漢字・読み", "difficulty": "standard", "type": "multiple_choice", "question": "次の漢字の読み方として正しいものを選びなさい。\n「抑制」", "choices": ["よくせい", "よくし", "よせい", "よくじ"], "answer": "よくせい", "explanation": "「抑制（よくせい）」は、感情や動きなどをおさえることを意味します。「抑」は「よく」、「制」は「せい」と読みます。ニュースや入試問題文でもよく使われる語です。"}, {"id": "jp-025", "subject": "japanese", "category": "慣用句・ことわざ", "difficulty": "standard", "type": "multiple_choice", "question": "「良薬は口に苦し」の意味として正しいものを選びなさい。", "choices": ["苦い薬は効果がない", "ためになる忠告は、聞きにくいことがある", "薬は甘いものの方がよい", "口の中を清潔に保つことが大切だ"], "answer": "ためになる忠告は、聞きにくいことがある", "explanation": "このことわざは、役に立つものほど受け入れにくいという意味です。苦い薬が病気を治すように、厳しい指摘や忠告が本当は大切だという教訓を含みます。"}, {"id": "jp-026", "subject": "japanese", "category": "文法・敬語", "difficulty": "standard", "type": "multiple_choice", "question": "次の文を敬語に直したとき、最も適切なものを選びなさい。\n「部長が会議に来ます。」", "choices": ["部長が会議にいらっしゃいます。", "部長が会議に参ります。", "部長が会議においでになります。", "部長が会議に来られます。"], "answer": "部長が会議にいらっしゃいます。", "explanation": "目上の人の「来る」は尊敬語の「いらっしゃる」にします。「参る」は謙譲語、「おいでになる」も尊敬語ですが「いらっしゃる」と同義で、ここでは「いらっしゃいます」が最も標準的です。「来られる」は二重敬語になるため誤りです。"}, {"id": "jp-027", "subject": "japanese", "category": "現代文・読解", "difficulty": "standard", "type": "multiple_choice", "question": "次の文章を読み、空欄に入る語として最も適切なものを選びなさい。\n\n「スポーツは勝ち負けだけではない。チームワークを学び、（　　　）を育てる場でもある。」", "choices": ["競争心", "精神力", "利己心", "偶然性"], "answer": "精神力", "explanation": "前文で「勝ち負けだけではない」とあり、スポーツの教育的価値を述べています。「チームワークを学ぶ」という流れから、忍耐力や精神力などの内面の成長が適切です。「利己心」は文脈に合いません。"}, {"id": "jp-028", "subject": "japanese", "category": "語彙", "difficulty": "standard", "type": "descriptive", "question": "次の文の（　）に入る最も適切な語を書きなさい。\n「彼の説明は（　　　）で、誰にでもわかりやすかった。」\n※「はっきりしていて簡潔な」という意味の四字熟語", "choices": null, "answer": "簡潔明瞭", "explanation": "「簡潔明瞭（かんけつめいりょう）」は、簡潔で明確なことを意味する四字熟語です。文脈の「誰にでもわかりやすかった」と結びつきます。入試では四字熟語の意味と使い分けが出題されます。"}, {"id": "math-001", "subject": "math", "category": "計算・正負の数", "difficulty": "easy", "type": "multiple_choice", "question": "次の計算をしなさい。\n(−3) + 7 − (−2)", "choices": ["6", "2", "12", "−12"], "answer": "6", "explanation": "二重の符号に注意して計算します。(−3) + 7 − (−2) = −3 + 7 + 2 = 6 です。マイナスをかっこでくくむと「マイナスを付け替える」と覚えるとよいでしょう。"}, {"id": "math-002", "subject": "math", "category": "計算・分数", "difficulty": "easy", "type": "multiple_choice", "question": "次の計算をしなさい。\n2/3 − 1/4", "choices": ["5/12", "1/12", "7/12", "1/2"], "answer": "5/12", "explanation": "通分して計算します。公分母は12です。2/3 = 8/12、1/4 = 3/12 なので、8/12 − 3/12 = 5/12 となります。"}, {"id": "math-003", "subject": "math", "category": "計算・文字式", "difficulty": "standard", "type": "multiple_choice", "question": "次の式を計算しなさい。\n3(2x − 4) − 2(x + 1)", "choices": ["4x − 14", "4x − 10", "8x − 14", "4x − 6"], "answer": "4x − 14", "explanation": "分配法則を使います。3(2x − 4) = 6x − 12、2(x + 1) = 2x + 2 です。よって 6x − 12 − 2x − 2 = 4x − 14 となります。マイナスを分配する際の符号ミスに注意です。"}, {"id": "math-004", "subject": "math", "category": "方程式・一次方程式", "difficulty": "easy", "type": "multiple_choice", "question": "次の方程式を解きなさい。\n3x − 5 = 16", "choices": ["x = 7", "x = 3", "x = 11", "x = 21"], "answer": "x = 7", "explanation": "両辺に5を足すと 3x = 21 です。両辺を3で割ると x = 7 となります。一次方程式は移項と同値変形の基本を確実にできます。"}, {"id": "math-005", "subject": "math", "category": "方程式・一次方程式", "difficulty": "standard", "type": "multiple_choice", "question": "次の方程式を解きなさい。\n2(x − 3) = 4x + 2", "choices": ["x = −4", "x = 4", "x = −2", "x = 2"], "answer": "x = −4", "explanation": "左辺を展開すると 2x − 6 = 4x + 2 です。移項して −6 − 2 = 4x − 2x、−8 = 2x、よって x = −4 となります。"}, {"id": "math-006", "subject": "math", "category": "方程式・連立方程式", "difficulty": "standard", "type": "multiple_choice", "question": "次の連立方程式を解きなさい。\n{x + y = 10\n{2x − y = 5", "choices": ["x = 5, y = 5", "x = 3, y = 7", "x = 7, y = 3", "x = 4, y = 6"], "answer": "x = 5, y = 5", "explanation": "加減法を使います。2つの式を足すと 3x = 15、x = 5 です。x = 5 を第1式に代入すると y = 5 となります。入試では加減法と代入法のどちらが効率的かを見極める力が問われます。"}, {"id": "math-007", "subject": "math", "category": "方程式・文章題", "difficulty": "standard", "type": "multiple_choice", "question": "兄は弟より5歳年上である。2人の年齢の和は23歳である。弟の年齢をx歳として、弟の年齢を求めなさい。", "choices": ["9歳", "14歳", "18歳", "5歳"], "answer": "9歳", "explanation": "弟をx歳とすると、兄は(x + 5)歳です。x + (x + 5) = 23 より 2x = 18、x = 9 です。文章題では未知の量を文字で表し、等量関係を式にする練習が重要です。"}, {"id": "math-008", "subject": "math", "category": "関数・比例反比例", "difficulty": "easy", "type": "multiple_choice", "question": "yはxに比例し、x = 4のとき y = 12 である。x = 6のときのyの値を求めなさい。", "choices": ["18", "12", "24", "9"], "answer": "18", "explanation": "比例の式は y = ax です。x = 4, y = 12 を代入すると 12 = 4a、a = 3 です。よって y = 3x で、x = 6 のとき y = 18 となります。"}, {"id": "math-009", "subject": "math", "category": "関数・反比例", "difficulty": "standard", "type": "multiple_choice", "question": "yはxに反比例し、x = 3のとき y = 8 である。x = 6のときのyの値を求めなさい。", "choices": ["4", "16", "2", "48"], "answer": "4", "explanation": "反比例の式は y = a/x です。x = 3, y = 8 を代入すると 8 = a/3、a = 24 です。x = 6 のとき y = 24/6 = 4 となります。反比例ではxが2倍になるとyは半分になります。"}, {"id": "math-010", "subject": "math", "category": "関数・一次関数", "difficulty": "standard", "type": "multiple_choice", "question": "一次関数 y = −2x + 6 のグラフがx軸と交わる点のx座標を求めなさい。", "choices": ["3", "−3", "6", "2"], "answer": "3", "explanation": "x軸との交点では y = 0 です。0 = −2x + 6 より 2x = 6、x = 3 となります。グラフの切片や交点を求める問題は一次関数の定番です。"}, {"id": "math-011", "subject": "math", "category": "関数・一次関数", "difficulty": "easy", "type": "multiple_choice", "question": "一次関数 y = 3x − 1 の傾きを求めなさい。", "choices": ["3", "−1", "1/3", "−3"], "answer": "3", "explanation": "一次関数 y = ax + b において、傾きはaです。この式では a = 3 なので、傾きは3です。傾きはxが1増えるときのyの変化量を表します。"}, {"id": "math-012", "subject": "math", "category": "図形・角度", "difficulty": "easy", "type": "multiple_choice", "question": "三角形の内角の和は何度ですか。", "choices": ["180°", "360°", "90°", "270°"], "answer": "180°", "explanation": "三角形の内角の和は常に180°です。これは平面図形の基本定理で、角度問題の出発点となります。"}, {"id": "math-013", "subject": "math", "category": "図形・角度", "difficulty": "standard", "type": "multiple_choice", "question": "平行線と横断線で、同位角が一方が65°のとき、もう一方の同位角の大きさは何度ですか。", "choices": ["65°", "115°", "25°", "90°"], "answer": "65°", "explanation": "平行線における同位角は等しいです。したがって、もう一方の同位角も65°となります。錯角・同位角・内角・外角の性質は図形問題の基本です。"}, {"id": "math-014", "subject": "math", "category": "図形・面積", "difficulty": "easy", "type": "multiple_choice", "question": "底辺が8cm、高さが5cmの三角形の面積を求めなさい。", "choices": ["20cm²", "40cm²", "13cm²", "80cm²"], "answer": "20cm²", "explanation": "三角形の面積は (底辺 × 高さ) ÷ 2 です。(8 × 5) ÷ 2 = 20cm² となります。高さは底辺に垂直であることに注意しましょう。"}, {"id": "math-015", "subject": "math", "category": "図形・面積", "difficulty": "standard", "type": "multiple_choice", "question": "半径4cmの円の面積を求めなさい。（円周率はπを用いる）", "choices": ["16π cm²", "8π cm²", "4π cm²", "32π cm²"], "answer": "16π cm²", "explanation": "円の面積は πr² です。r = 4 を代入すると π × 4² = 16π cm² となります。円周（2πr）と混同しないよう注意が必要です。"}, {"id": "math-016", "subject": "math", "category": "図形・体積", "difficulty": "standard", "type": "multiple_choice", "question": "縦3cm、横4cm、高さ5cmの直方体の体積を求めなさい。", "choices": ["60cm³", "47cm³", "12cm³", "120cm³"], "answer": "60cm³", "explanation": "直方体の体積は 縦 × 横 × 高さ です。3 × 4 × 5 = 60cm³ となります。空間図形では体積と表面積の公式を正確に覚えることが大切です。"}, {"id": "math-017", "subject": "math", "category": "図形・体積", "difficulty": "easy", "type": "multiple_choice", "question": "一辺が3cmの立方体の体積を求めなさい。", "choices": ["27cm³", "9cm³", "18cm³", "6cm³"], "answer": "27cm³", "explanation": "立方体の体積は 一辺³ です。3³ = 27cm³ となります。表面積は 6 × 3² = 54cm² であり、体積とは異なる量です。"}, {"id": "math-018", "subject": "math", "category": "図形・合同・相似", "difficulty": "standard", "type": "multiple_choice", "question": "2つの三角形が相似で、相似比が2:3である。小さい三角形のある辺が6cmのとき、大きい三角形の対応する辺の長さは何cmですか。", "choices": ["9cm", "4cm", "12cm", "8cm"], "answer": "9cm", "explanation": "相似比2:3より、6:x = 2:3 です。内項の積と外項の積が等しいので 2x = 18、x = 9cm となります。相似比は対応する辺の比です。"}, {"id": "math-019", "subject": "math", "category": "確率", "difficulty": "easy", "type": "multiple_choice", "question": "1から6までの目があるサイコロを1回投げて、偶数の目が出る確率を求めなさい。", "choices": ["1/2", "1/3", "2/3", "1/6"], "answer": "1/2", "explanation": "偶数の目は2, 4, 6の3通りです。全体は6通りなので、確率は 3/6 = 1/2 となります。確率 = 起こりうる場合の数 ÷ すべての場合の数 です。"}, {"id": "math-020", "subject": "math", "category": "確率", "difficulty": "standard", "type": "multiple_choice", "question": "赤玉3個、白玉2個の袋から1個取り出すとき、赤玉が出る確率を求めなさい。", "choices": ["3/5", "2/5", "1/3", "3/2"], "answer": "3/5", "explanation": "玉の総数は3 + 2 = 5個です。赤玉は3個なので、確率は 3/5 となります。玉の色ごとに数え、全体に対する割合を求めます。"}, {"id": "math-021", "subject": "math", "category": "確率", "difficulty": "standard", "type": "multiple_choice", "question": "コインを2回投げて、2回とも表が出る確率を求めなさい。", "choices": ["1/4", "1/2", "1/3", "2/3"], "answer": "1/4", "explanation": "1回目の表の確率は1/2、2回目も1/2です。独立な事象なので 1/2 × 1/2 = 1/4 となります。樹形図を書くと（表表・表裏・裏表・裏裏）の4通りで確認できます。"}, {"id": "math-022", "subject": "math", "category": "データの活用", "difficulty": "easy", "type": "multiple_choice", "question": "次の5人のテストの点数は 60, 70, 80, 70, 100 です。平均点を求めなさい。", "choices": ["76点", "70点", "80点", "74点"], "answer": "76点", "explanation": "平均 = 合計 ÷ 個数 です。(60 + 70 + 80 + 70 + 100) ÷ 5 = 380 ÷ 5 = 76点 となります。"}, {"id": "math-023", "subject": "math", "category": "データの活用", "difficulty": "standard", "type": "multiple_choice", "question": "次のデータの中央値を求めなさい。\n3, 5, 7, 9, 11", "choices": ["7", "5", "9", "6"], "answer": "7", "explanation": "データを小さい順に並べたとき、ちょうど真ん中にくる値が中央値です。5個のデータでは3番目の7が中央値となります。個数が偶数のときは中央2つの平均を取ります。"}, {"id": "math-024", "subject": "math", "category": "計算・累乗", "difficulty": "easy", "type": "multiple_choice", "question": "次の計算をしなさい。\n(−2)³", "choices": ["−8", "8", "−6", "6"], "answer": "−8", "explanation": "(−2)³ = (−2) × (−2) × (−2) = 4 × (−2) = −8 です。奇数乗では負の数の結果も負になります。偶数乗では正になります。"}, {"id": "math-025", "subject": "math", "category": "図形・角度", "difficulty": "standard", "type": "descriptive", "question": "正八角形の1つの内角の大きさを求めなさい。", "choices": null, "answer": "135°", "explanation": "n角形の内角の和は (n − 2) × 180° です。正八角形では (8 − 2) × 180° = 1080° で、1つの内角は 1080° ÷ 8 = 135° となります。"}, {"id": "math-026", "subject": "math", "category": "方程式・文章題", "difficulty": "easy", "type": "multiple_choice", "question": "1200円の品物を20%引きで買ったとき、支払い金額はいくらですか。", "choices": ["960円", "240円", "1000円", "1440円"], "answer": "960円", "explanation": "20%引きは80%の価格で買うことです。1200 × 0.8 = 960円 となります。または 1200 × 20/100 = 240円が割引額で、1200 − 240 = 960円 です。"}, {"id": "math-027", "subject": "math", "category": "関数・一次関数", "difficulty": "standard", "type": "multiple_choice", "question": "2点 (1, 2) と (3, 8) を通る一次関数の式を求めなさい。", "choices": ["y = 3x − 1", "y = 2x", "y = 3x + 1", "y = 4x − 2"], "answer": "y = 3x − 1", "explanation": "傾き a = (8 − 2)/(3 − 1) = 6/2 = 3 です。y = 3x + b に (1, 2) を代入すると 2 = 3 + b、b = −1 です。よって y = 3x − 1 となります。"}, {"id": "math-028", "subject": "math", "category": "図形・面積", "difficulty": "standard", "type": "multiple_choice", "question": "上底が4cm、下底が10cm、高さが6cmの台形の面積を求めなさい。", "choices": ["42cm²", "84cm²", "60cm²", "24cm²"], "answer": "42cm²", "explanation": "台形の面積は (上底 + 下底) × 高さ ÷ 2 です。(4 + 10) × 6 ÷ 2 = 14 × 3 = 42cm² となります。"}, {"id": "en-001", "subject": "english", "category": "文法・時制", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nI (    ) to school every day.", "choices": ["go", "goes", "went", "going"], "answer": "go", "explanation": "主語がIで、every day（毎日）という習慣を表す副詞があるため、現在形の動詞原形 go が正解です。三人称単数のときだけ動詞にsを付けます。"}, {"id": "en-002", "subject": "english", "category": "文法・時制", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nShe (    ) her homework when I called her last night.", "choices": ["was doing", "is doing", "did", "does"], "answer": "was doing", "explanation": "when I called（電話したとき）という過去の一点の動作のとき、進行していた動作は過去進行形 was doing で表します。「電話したとき、彼女は宿題をしていた」という文脈です。"}, {"id": "en-003", "subject": "english", "category": "文法・助動詞", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nYou (    ) study hard to pass the exam.", "choices": ["should", "may", "must not", "need"], "answer": "should", "explanation": "「試験に合格するためには勉強すべきだ」という助言・忠告を表すので should が適切です。must はより強い義務、may は可能、must not は禁止を表します。"}, {"id": "en-004", "subject": "english", "category": "文法・比較", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nThis book is (    ) than that one.", "choices": ["more interesting", "interestinger", "most interesting", "interesting"], "answer": "more interesting", "explanation": "3音節以上の長い形容詞の比較級は more + 形容詞 の形をとります。interesting → more interesting が正しい比較級です。"}, {"id": "en-005", "subject": "english", "category": "文法・受動態", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nThis letter (    ) by Tom yesterday.", "choices": ["was written", "wrote", "is written", "writes"], "answer": "was written", "explanation": "手紙は「書かれる」側なので受動態を使います。yesterday があるので過去形の受動態 was written が正解です。能動態の wrote では意味が通りません。"}, {"id": "en-006", "subject": "english", "category": "文法・関係代名詞", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nThis is the boy (    ) won the speech contest.", "choices": ["who", "which", "whom", "whose"], "answer": "who", "explanation": "先行詞が人（the boy）で、関係詞が主語の役割を果たすため who が正解です。which は物、whom は目的格、whose は所有を表します。"}, {"id": "en-007", "subject": "english", "category": "文法・不定詞・動名詞", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nI want (    ) English well.", "choices": ["to speak", "speak", "speaking", "spoke"], "answer": "to speak", "explanation": "want の後には to + 動詞の原形（不定詞）が続きます。「〜したい」という希望を表す基本構文です。enjoy など一部の動詞は動名詞が続きます。"}, {"id": "en-008", "subject": "english", "category": "文法・前置詞", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nShe is good (    ) playing the piano.", "choices": ["at", "in", "on", "for"], "answer": "at", "explanation": "be good at は「〜が得意である」という熟語です。in（〜の中で）、on（〜の上に）、for（〜のために）ではこの意味になりません。入試頻出の前置詞句です。"}, {"id": "en-009", "subject": "english", "category": "語彙", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the word that best fits the sentence.\nWe should (    ) the environment.", "choices": ["protect", "produce", "provide", "prevent"], "answer": "protect", "explanation": "protect は「保護する」という意味です。「環境を保護すべきだ」という文脈に合います。produce（生産する）、provide（提供する）、prevent（防ぐ）では意味が不自然です。"}, {"id": "en-010", "subject": "english", "category": "語彙", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the word that best fits the sentence.\nThe (    ) of this machine is very complicated.", "choices": ["structure", "strawberry", "stranger", "stream"], "answer": "structure", "explanation": "structure は「構造」という意味です。「この機械の構造はとても複雑だ」という文脈に合います。他の選択肢は意味が通りません。"}, {"id": "en-011", "subject": "english", "category": "語彙", "difficulty": "easy", "type": "multiple_choice", "question": "What is the meaning of the underlined word?\nI am very <u>grateful</u> for your help.", "choices": ["thankful", "angry", "sorry", "surprised"], "answer": "thankful", "explanation": "grateful は「感謝している」という意味で、thankful と同義です。文脈は「あなたの助けに感謝しています」です。入試では形容詞の意味を問う語彙問題が頻出します。"}, {"id": "en-012", "subject": "english", "category": "語彙", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the word that is closest in meaning to \"achieve\".", "choices": ["accomplish", "accept", "avoid", "agree"], "answer": "accomplish", "explanation": "achieve と accomplish はどちらも「達成する、成し遂げる」という意味です。accept（受け入れる）、avoid（避ける）、agree（同意する）は意味が異なります。"}, {"id": "en-013", "subject": "english", "category": "空所補充", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nThere (    ) many students in the library.", "choices": ["are", "is", "was", "be"], "answer": "are", "explanation": "There are + 複数名詞 の形です。many students が複数形なので are が正解です。There is は単数形、There was は過去形です。"}, {"id": "en-014", "subject": "english", "category": "空所補充", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nIf it (    ) tomorrow, we will cancel the picnic.", "choices": ["rains", "will rain", "rained", "is raining"], "answer": "rains", "explanation": "条件文の第1タイプ（If + 現在形, will + 動詞原形）では、if節に未来のことでも現在形を使います。「もし明日雨が降れば」は If it rains tomorrow です。"}, {"id": "en-015", "subject": "english", "category": "空所補充", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nI have (    ) lived in this city for ten years.", "choices": ["already", "yet", "ever", "never"], "answer": "already", "explanation": "現在完了の肯定文で「すでに」という意味を表すのは already です。yet は疑問文・否定文、「まだ〜ない」、ever は「今までに」、never は「一度も〜ない」です。"}, {"id": "en-016", "subject": "english", "category": "空所補充", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nCould you tell me (    ) the station is?", "choices": ["where", "what", "which", "who"], "answer": "where", "explanation": "「駅がどこにあるか教えてください」という意味なので、場所を尋ねる where が適切です。間接疑問文では語順が「疑問詞 + 主語 + 動詞」になります。"}, {"id": "en-017", "subject": "english", "category": "語句整序", "difficulty": "standard", "type": "multiple_choice", "question": "Arrange the words to make a correct sentence.\n( play / does / tennis / she / ? )", "choices": ["Does she play tennis?", "She does play tennis?", "Does play she tennis?", "She play does tennis?"], "answer": "Does she play tennis?", "explanation": "一般動詞の疑問文は Do/Does + 主語 + 動詞原形 の語順です。主語が she なので Does を使い、動詞は原形 play です。入試の語句整序問題では語順の基本を確実にできます。"}, {"id": "en-018", "subject": "english", "category": "語句整序", "difficulty": "easy", "type": "multiple_choice", "question": "Arrange the words to make a correct sentence.\n( to / went / school / I / yesterday / . )", "choices": ["I went to school yesterday.", "I yesterday went to school.", "Went I to school yesterday.", "I went yesterday to school."], "answer": "I went to school yesterday.", "explanation": "基本の語順は 主語 + 動詞 + 目的語 + 副詞 です。yesterday は文の最後に置くのが自然です。went は go の過去形です。"}, {"id": "en-019", "subject": "english", "category": "長文読解", "difficulty": "easy", "type": "multiple_choice", "question": "Read the passage and answer the question.\n\nTom gets up at six every morning. He has breakfast and goes to school by bus. He likes science class best.\n\nWhat does Tom like best?", "choices": ["Science class", "Breakfast", "The bus", "Getting up early"], "answer": "Science class", "explanation": "本文の最後に \"He likes science class best.\" と明記されています。長文読解では設問のキーワード（here: like best）に対応する文を探すことが基本です。"}, {"id": "en-020", "subject": "english", "category": "長文読解", "difficulty": "standard", "type": "multiple_choice", "question": "Read the passage and answer the question.\n\nMany people use smartphones every day. They are useful for communication and learning. However, using them too much can cause health problems. It is important to take breaks.\n\nWhat is the main idea of this passage?", "choices": ["Smartphones are completely harmful.", "Smartphones are useful, but we should use them carefully.", "Everyone should stop using smartphones.", "Smartphones are only for communication."], "answer": "Smartphones are useful, but we should use them carefully.", "explanation": "本文は便利さ（useful）を認めつつ、使いすぎの問題（health problems）に触れ、休憩の重要性（take breaks）を述べています。メインアイデアは「便利だが注意して使うべき」です。"}, {"id": "en-021", "subject": "english", "category": "長文読解", "difficulty": "standard", "type": "multiple_choice", "question": "Read the passage and answer the question.\n\nYuki joined a volunteer group last year. She helps clean the local park on weekends. She says, \"I feel happy when I see children playing in a clean park.\"\n\nWhy does Yuki volunteer?", "choices": ["She wants to earn money.", "She enjoys seeing children play in a clean park.", "She has to clean the park for school.", "She does not like weekends."], "answer": "She enjoys seeing children play in a clean park.", "explanation": "Yuki の発言 \"I feel happy when I see children playing in a clean park.\" から、きれいな公園で子どもたちが遊ぶ姿を見ることが喜びであり、ボランティアの動機だと読み取れます。"}, {"id": "en-022", "subject": "english", "category": "文法・疑問文", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\n(    ) you like music?", "choices": ["Do", "Does", "Are", "Is"], "answer": "Do", "explanation": "主語が you で、一般動詞 like を使う疑問文なので Do が正解です。Does は三人称単数、Are/Is はbe動詞の疑問文で使います。"}, {"id": "en-023", "subject": "english", "category": "文法・接続詞", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nI stayed home (    ) it was raining heavily.", "choices": ["because", "but", "or", "so"], "answer": "because", "explanation": "「大雨だったので家にいた」という因果関係を表すので because が適切です。but は逆接、or は選択、so は結果を表します。"}, {"id": "en-024", "subject": "english", "category": "語彙", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nThe doctor gave me some (    ) for my cold.", "choices": ["medicine", "message", "memory", "member"], "answer": "medicine", "explanation": "medicine は「薬」という意味です。かぜの治療に関連する文脈に合います。message（伝言）、memory（記憶）、member（一員）は文脈に合いません。"}, {"id": "en-025", "subject": "english", "category": "空所補充", "difficulty": "standard", "type": "multiple_choice", "question": "Choose the best answer.\nThis is the (    ) book I have ever read.", "choices": ["most exciting", "more exciting", "exciting", "very exciting"], "answer": "most exciting", "explanation": "「今まで読んだ中で最も」という最上級を表す表現なので、most exciting が正解です。比較級の more exciting や原形の exciting では意味が通りません。"}, {"id": "en-026", "subject": "english", "category": "長文読解", "difficulty": "easy", "type": "multiple_choice", "question": "Read the passage and answer the question.\n\nKen practices basketball for two hours every day after school. His dream is to join the school team.\n\nHow long does Ken practice basketball every day?", "choices": ["Two hours", "One hour", "Three hours", "Four hours"], "answer": "Two hours", "explanation": "本文に \"for two hours every day\" とあるので、毎日2時間練習しています。入試の短い読解では数字や時間の情報を正確に拾うことが求められます。"}, {"id": "en-027", "subject": "english", "category": "文法・代名詞", "difficulty": "easy", "type": "multiple_choice", "question": "Choose the best answer.\nThis bag is (    ).", "choices": ["mine", "my", "me", "I"], "answer": "mine", "explanation": "「このかばんは私のものです」という所有を表すには名詞の代わりに使う所有代名詞 mine が必要です。my は形容詞的用法で後に名詞が続きます。"}, {"id": "en-028", "subject": "english", "category": "語彙", "difficulty": "standard", "type": "descriptive", "question": "Write the past tense of the verb \"begin\".", "choices": null, "answer": "began", "explanation": "begin の過去形は不規則変化の began です。過去分詞は begun です。入試では不規則動詞の過去形・過去分詞の区別がよく出題されます。"}];
+
+const SUBJECTS = {
+  japanese: { name: '国語', icon: '📖', color: 'from-rose-500 to-pink-600', border: 'border-rose-500/30',
+    categories: ['漢字', '語彙', '現代文', '読解', '文法', '敬語', '慣用句'] },
+  math: { name: '数学', icon: '🔢', color: 'from-blue-500 to-cyan-600', border: 'border-blue-500/30',
+    categories: ['計算', '方程式', '関数', '図形', '確率', 'データ'] },
+  english: { name: '英語', icon: '🔤', color: 'from-emerald-500 to-teal-600', border: 'border-emerald-500/30',
+    categories: ['文法', '語彙', '長文', '空所補充', '語句整序'] }
+};
+
+const ENCOURAGEMENTS = [
+  '一問一問、確実に力をつけよう！', '今日の努力が合格を掴む！', '間違えても大丈夫、解説で理解すれば勝ち！',
+  'あと少し！集中力を切らさず！', '過去問のように、本番でも冷静に！', 'できるところから着実に！',
+  '君の努力は必ず実を結ぶ！', '解説をしっかり読めば弱点は消える！', '合格は目の前にある！',
+  '一歩ずつ、確実に前へ！'
+];
+
+const STORAGE_KEY = 'kcs-scholarship-prep-v1';
+
+// ===== State & Storage =====
+function loadProgress() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    return d ? JSON.parse(d) : { answered: {}, mockExams: [], streak: 0, lastDate: null };
+  } catch { return { answered: {}, mockExams: [], streak: 0, lastDate: null }; }
+}
+
+function saveProgress(p) {
+  const today = new Date().toDateString();
+  if (p.lastDate !== today) {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    p.streak = p.lastDate === yesterday.toDateString() ? (p.streak || 0) + 1 : 1;
+    p.lastDate = today;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+
+let progress = loadProgress();
+let state = { view: 'home', subject: null, category: null, mode: null, quiz: null };
+
+function getSubjectQuestions(subject, categoryFilter) {
+  return QUESTIONS.filter(q => {
+    if (q.subject !== subject) return false;
+    if (!categoryFilter) return true;
+    return SUBJECTS[subject].categories.some(cat => q.category.includes(cat) || cat.includes(q.category.split('・')[0]));
+  });
+}
+
+function matchCategory(q, filter) {
+  if (!filter) return true;
+  const cats = SUBJECTS[q.subject].categories;
+  return cats.some(cat => {
+    if (cat === filter) return q.category.includes(cat) || q.category.startsWith(cat);
+    return false;
+  }) || q.category.includes(filter);
+}
+
+function getStats() {
+  const total = QUESTIONS.length;
+  const answered = Object.keys(progress.answered).length;
+  const correct = Object.values(progress.answered).filter(a => a.correct).length;
+  const weak = Object.entries(progress.answered).filter(([,a]) => !a.correct).map(([id]) => id);
+  return { total, answered, correct, weak: weak.length, accuracy: answered ? Math.round(correct/answered*100) : 0 };
+}
+
+function normalizeAnswer(s) {
+  return String(s).trim().toLowerCase().replace(/\s+/g, '').replace(/[°度]/g, '°');
+}
+
+function checkAnswer(q, userAns) {
+  const correct = normalizeAnswer(q.answer);
+  const user = normalizeAnswer(userAns);
+  if (correct === user) return true;
+  if (q.type === 'descriptive') {
+    return (correct.includes(user) && user.length >= 2) || user.includes(correct);
+  }
+  return false;
+}
+
+function recordAnswer(qId, correct) {
+  const prev = progress.answered[qId];
+  progress.answered[qId] = {
+    correct: prev ? prev.correct || correct : correct,
+    attempts: (prev?.attempts || 0) + 1,
+    lastAttempt: Date.now(),
+    lastCorrect: correct
+  };
+  saveProgress(progress);
+}
+
+// ===== Render Helpers =====
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+function renderHeaderStats() {
+  const s = getStats();
+  document.getElementById('header-stats').innerHTML = `
+    <span>📊 ${s.answered}/${s.total}</span>
+    <span class="text-kcs-400">✓ ${s.accuracy}%</span>
+    ${s.weak > 0 ? `<span class="text-amber-400">⚠ ${s.weak}</span>` : ''}
+  `;
+}
+
+function progressBar(pct, color='bg-kcs-500') {
+  return `<div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+    <div class="${color} h-full rounded-full progress-glow transition-all duration-700" style="width:${pct}%"></div>
+  </div>`;
+}
+
+function getEncouragement() {
+  return ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+}
+
+function getExamCountdown() {
+  const now = new Date();
+  const exam = new Date(now);
+  exam.setHours(13, 0, 0, 0);
+  if (now >= exam) return { passed: true, text: '本番当日！落ち着いて実力を出そう！' };
+  const diff = exam - now;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return { passed: false, text: `本番まで あと ${h}時間${m}分` };
+}
+
+// ===== Views =====
+function renderHome() {
+  const s = getStats();
+  const cd = getExamCountdown();
+  const pct = Math.round(s.answered / s.total * 100);
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="animate-fade-in space-y-6">
+      <div class="glass rounded-2xl p-6 text-center ${cd.passed ? 'border border-amber-500/40' : 'border border-kcs-500/30'}">
+        <p class="text-xs text-gray-400 mb-1">KCS北九州情報専門学校</p>
+        <h1 class="text-2xl sm:text-3xl font-black bg-gradient-to-r from-kcs-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+          奨学生試験 本気対策
+        </h1>
+        <p class="text-amber-400 font-bold text-sm sm:text-base mb-4">⏰ ${cd.text}</p>
+        <p class="text-gray-300 text-sm">${getEncouragement()}</p>
+      </div>
+
+      <div class="glass rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm text-gray-400">学習進捗</span>
+          <span class="text-kcs-400 font-bold">${pct}%</span>
+        </div>
+        ${progressBar(pct)}
+        <div class="grid grid-cols-3 gap-3 mt-4 text-center">
+          <div><p class="text-2xl font-bold text-white">${s.answered}</p><p class="text-xs text-gray-500">解答済</p></div>
+          <div><p class="text-2xl font-bold text-green-400">${s.correct}</p><p class="text-xs text-gray-500">正解</p></div>
+          <div><p class="text-2xl font-bold text-amber-400">${s.weak}</p><p class="text-xs text-gray-500">要復習</p></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        ${Object.entries(SUBJECTS).map(([key, sub]) => {
+          const qs = QUESTIONS.filter(q => q.subject === key);
+          const done = qs.filter(q => progress.answered[q.id]).length;
+          const subPct = Math.round(done / qs.length * 100);
+          return `<button onclick="goSubject('${key}')" class="glass rounded-2xl p-5 text-left hover:scale-[1.02] transition-transform ${sub.border} border group">
+            <span class="text-3xl">${sub.icon}</span>
+            <h2 class="text-lg font-bold mt-2">${sub.name}</h2>
+            <p class="text-xs text-gray-500 mt-1">${qs.length}問</p>
+            <div class="mt-3">${progressBar(subPct, 'bg-gradient-to-r ' + sub.color)}</div>
+            <p class="text-xs text-gray-400 mt-1">${done}/${qs.length} 完了</p>
+          </button>`;
+        }).join('')}
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button onclick="startMockExam()" class="glass rounded-2xl p-5 text-left border border-purple-500/30 hover:border-purple-500/60 transition group">
+          <span class="text-3xl">⏱️</span>
+          <h2 class="text-lg font-bold mt-2">60分 模擬試験</h2>
+          <p class="text-xs text-gray-400 mt-1">国語・数学・英語 各10問（計30問）<br>本番形式で実力チェック</p>
+        </button>
+        <button onclick="startWeakReview()" class="glass rounded-2xl p-5 text-left border border-amber-500/30 hover:border-amber-500/60 transition group">
+          <span class="text-3xl">🎯</span>
+          <h2 class="text-lg font-bold mt-2">弱点復習</h2>
+          <p class="text-xs text-gray-400 mt-1">${s.weak > 0 ? `間違えた${s.weak}問を集中的に復習` : 'まだ弱点なし！模試や演習を進めよう'}</p>
+        </button>
+      </div>
+
+      <button onclick="resetProgress()" class="w-full text-center text-xs text-gray-600 hover:text-gray-400 py-2 transition">進捗をリセット</button>
+    </div>`;
+  renderHeaderStats();
+}
+
+function renderSubject(subject) {
+  const sub = SUBJECTS[subject];
+  const main = document.getElementById('main');
+  const cats = sub.categories;
+  main.innerHTML = `
+    <div class="animate-fade-in space-y-5">
+      <button onclick="renderHome()" class="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition">← ホームに戻る</button>
+      <div class="flex items-center gap-3">
+        <span class="text-4xl">${sub.icon}</span>
+        <div>
+          <h1 class="text-2xl font-black">${sub.name}</h1>
+          <p class="text-sm text-gray-400">カテゴリを選んで演習開始</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <button onclick="startQuiz('${subject}', null)" class="w-full glass rounded-xl p-4 text-left border border-kcs-500/30 hover:border-kcs-500/60 transition">
+          <span class="font-bold">📚 全問題シャッフル演習</span>
+          <span class="text-xs text-gray-400 block mt-1">${QUESTIONS.filter(q=>q.subject===subject).length}問すべて</span>
+        </button>
+        ${cats.map(cat => {
+          const qs = QUESTIONS.filter(q => q.subject === subject && matchCategory(q, cat));
+          if (!qs.length) return '';
+          const done = qs.filter(q => progress.answered[q.id]).length;
+          return `<button onclick="startQuiz('${subject}', '${cat}')" class="w-full glass rounded-xl p-4 text-left hover:border-white/20 border border-transparent transition flex justify-between items-center">
+            <div>
+              <span class="font-medium">${cat}</span>
+              <span class="text-xs text-gray-500 block mt-0.5">${qs.length}問</span>
+            </div>
+            <span class="text-xs text-gray-400">${done}/${qs.length}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>`;
+  renderHeaderStats();
+}
+
+// ===== Quiz Engine =====
+function startQuiz(subject, category) {
+  let qs = QUESTIONS.filter(q => q.subject === subject && matchCategory(q, category));
+  qs = shuffle(qs);
+  initQuiz(qs, category ? `${SUBJECTS[subject].name} - ${category}` : SUBJECTS[subject].name);
+}
+
+function startMockExam() {
+  const jp = shuffle(QUESTIONS.filter(q => q.subject === 'japanese')).slice(0, 10);
+  const ma = shuffle(QUESTIONS.filter(q => q.subject === 'math')).slice(0, 10);
+  const en = shuffle(QUESTIONS.filter(q => q.subject === 'english')).slice(0, 10);
+  const qs = shuffle([...jp, ...ma, ...en]);
+  initQuiz(qs, '60分 模擬試験', true);
+}
+
+function startWeakReview() {
+  const weakIds = Object.entries(progress.answered).filter(([,a]) => !a.correct || !a.lastCorrect).map(([id]) => id);
+  const unanswered = QUESTIONS.filter(q => !progress.answered[q.id]).map(q => q.id);
+  let ids = [...new Set([...weakIds, ...unanswered.slice(0, 5)])];
+  if (!ids.length) { alert('弱点はありません！全問正解済みです。模試に挑戦しましょう！'); return; }
+  const qs = shuffle(ids.map(id => QUESTIONS.find(q => q.id === id)).filter(Boolean));
+  initQuiz(qs, '弱点復習');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function initQuiz(questions, title, isMock = false) {
+  state.quiz = {
+    questions, title, isMock,
+    index: 0, score: 0, answers: [],
+    startTime: Date.now(),
+    timerEnd: isMock ? Date.now() + 60 * 60 * 1000 : null,
+    timerInterval: null,
+    submitted: false
+  };
+  if (isMock) {
+    state.quiz.timerInterval = setInterval(() => {
+      if (!state.quiz) return;
+      const left = state.quiz.timerEnd - Date.now();
+      if (left <= 0) { finishQuiz(); return; }
+      updateTimerDisplay(left);
+    }, 1000);
+  }
+  renderQuiz();
+}
+
+function updateTimerDisplay(ms) {
+  const el = document.getElementById('quiz-timer');
+  if (!el) return;
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (ms < 5 * 60 * 1000) el.classList.add('timer-warning', 'text-red-400');
+}
+
+function renderQuiz() {
+  const qz = state.quiz;
+  if (!qz) return;
+  const q = qz.questions[qz.index];
+  const total = qz.questions.length;
+  const pct = Math.round((qz.index) / total * 100);
+  const main = document.getElementById('main');
+
+  let choicesHtml = '';
+  if (q.type === 'multiple_choice') {
+    choicesHtml = q.choices.map((c, i) =>
+      `<button class="choice-btn w-full text-left glass rounded-xl p-4 border border-gray-700 mb-2 text-sm sm:text-base" data-choice="${i}" onclick="selectChoice(${i})">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-800 text-xs font-bold mr-3 text-gray-400">${'ABCD'[i]}</span>${c}
+      </button>`
+    ).join('');
+  } else {
+    choicesHtml = `<div class="space-y-3">
+      <input id="descriptive-input" type="text" placeholder="答えを入力してください" 
+        class="w-full glass rounded-xl p-4 border border-gray-700 bg-transparent text-white focus:border-kcs-500 focus:outline-none text-base"
+        onkeydown="if(event.key==='Enter')submitAnswer()">
+      <p class="text-xs text-gray-500">※漢字・数字・英語など、正確に入力してください</p>
+    </div>`;
+  }
+
+  main.innerHTML = `
+    <div class="animate-fade-in space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="confirmExitQuiz()" class="text-gray-400 hover:text-white text-sm transition">← 中断</button>
+        ${qz.isMock ? `<div id="quiz-timer" class="font-mono text-lg font-bold text-kcs-400">60:00</div>` : ''}
+      </div>
+      <div>
+        <div class="flex justify-between text-xs text-gray-400 mb-1">
+          <span>${qz.title}</span>
+          <span>${qz.index + 1} / ${total}</span>
+        </div>
+        ${progressBar(pct)}
+      </div>
+      <div class="glass rounded-2xl p-5 sm:p-6">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400">${q.category}</span>
+          <span class="text-xs px-2 py-1 rounded-full ${q.difficulty==='easy'?'bg-green-900/40 text-green-400':'bg-amber-900/40 text-amber-400'}">${q.difficulty==='easy'?'基礎':'標準'}</span>
+          ${q.type==='descriptive'?'<span class="text-xs px-2 py-1 rounded-full bg-purple-900/40 text-purple-400">記述</span>':''}
+        </div>
+        <p class="question-text text-base sm:text-lg font-medium mb-6">${q.question}</p>
+        <div id="choices-area">${choicesHtml}</div>
+        <div id="feedback-area" class="hidden mt-4"></div>
+      </div>
+      <button id="submit-btn" onclick="submitAnswer()" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-kcs-600 to-kcs-500 hover:from-kcs-500 hover:to-kcs-400 transition disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation" ${q.type==='multiple_choice'?'disabled':''}>
+        答えを確認する
+      </button>
+      <button id="next-btn" onclick="nextQuestion()" class="hidden w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 transition touch-manipulation">
+        次の問題へ →
+      </button>
+    </div>`;
+
+  if (qz.isMock) updateTimerDisplay(qz.timerEnd - Date.now());
+  state.quiz.selectedChoice = null;
+  state.quiz.submitted = false;
+  renderHeaderStats();
+}
+
+let selectedChoice = null;
+function selectChoice(idx) {
+  if (state.quiz.submitted) return;
+  selectedChoice = idx;
+  state.quiz.selectedChoice = idx;
+  document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+  const qz = state.quiz;
+  if (qz.submitted) return;
+  const q = qz.questions[qz.index];
+  let userAns, isCorrect;
+
+  if (q.type === 'multiple_choice') {
+    if (selectedChoice === null) return;
+    userAns = q.choices[selectedChoice];
+    isCorrect = userAns === q.answer;
+  } else {
+    const input = document.getElementById('descriptive-input');
+    userAns = input.value;
+    if (!userAns.trim()) return;
+    isCorrect = checkAnswer(q, userAns);
+  }
+
+  qz.submitted = true;
+  if (isCorrect) qz.score++;
+  qz.answers.push({ id: q.id, correct: isCorrect, userAns });
+  recordAnswer(q.id, isCorrect);
+
+  // Show feedback
+  const fb = document.getElementById('feedback-area');
+  fb.classList.remove('hidden');
+  fb.innerHTML = `
+    <div class="rounded-xl p-4 ${isCorrect ? 'bg-green-900/30 border border-green-500/30' : 'bg-red-900/30 border border-red-500/30'}">
+      <p class="font-bold text-lg mb-2">${isCorrect ? '✅ 正解！' : '❌ 不正解'}</p>
+      ${!isCorrect ? `<p class="text-sm text-gray-300 mb-2">正解: <strong class="text-white">${q.answer}</strong></p>` : ''}
+      <p class="text-sm text-gray-400 leading-relaxed">${q.explanation}</p>
+      ${isCorrect ? `<p class="text-sm text-green-400 mt-2 font-medium">${getEncouragement()}</p>` : `<p class="text-sm text-amber-400 mt-2 font-medium">解説を読んで理解しよう。弱点復習で再チャレンジ！</p>`}
+    </div>`;
+
+  if (q.type === 'multiple_choice') {
+    document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+      btn.disabled = true;
+      const val = q.choices[i];
+      if (val === q.answer) btn.classList.add('correct');
+      else if (i === selectedChoice) btn.classList.add('wrong');
+    });
+  } else {
+    document.getElementById('descriptive-input').disabled = true;
+  }
+
+  document.getElementById('submit-btn').classList.add('hidden');
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('hidden');
+  if (qz.index >= qz.questions.length - 1) nextBtn.textContent = '結果を見る →';
+  renderHeaderStats();
+}
+
+function nextQuestion() {
+  const qz = state.quiz;
+  selectedChoice = null;
+  if (qz.index < qz.questions.length - 1) {
+    qz.index++;
+    renderQuiz();
+  } else {
+    finishQuiz();
+  }
+}
+
+function finishQuiz() {
+  const qz = state.quiz;
+  if (qz.timerInterval) clearInterval(qz.timerInterval);
+  const total = qz.questions.length;
+  const pct = Math.round(qz.score / total * 100);
+  const elapsed = Math.round((Date.now() - qz.startTime) / 1000);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+
+  if (qz.isMock) {
+    progress.mockExams.push({ score: qz.score, total, date: Date.now(), pct });
+    saveProgress(progress);
+  }
+
+  let grade, gradeColor, gradeMsg;
+  if (pct >= 90) { grade = 'S'; gradeColor = 'text-yellow-400'; gradeMsg = '素晴らしい！本番でもこの調子で！'; }
+  else if (pct >= 80) { grade = 'A'; gradeColor = 'text-green-400'; gradeMsg = '合格圏内！弱点を潰せば完璧！'; }
+  else if (pct >= 70) { grade = 'B'; gradeColor = 'text-blue-400'; gradeMsg = 'あと一歩！弱点復習で伸ばそう！'; }
+  else if (pct >= 60) { grade = 'C'; gradeColor = 'text-amber-400'; gradeMsg = '基礎はできている。解説を読み込もう！'; }
+  else { grade = 'D'; gradeColor = 'text-red-400'; gradeMsg = '焦らず一問ずつ。解説が最大の武器！'; }
+
+  const wrongQs = qz.answers.filter(a => !a.correct);
+
+  document.getElementById('main').innerHTML = `
+    <div class="animate-fade-in space-y-6 text-center">
+      <div class="glass rounded-2xl p-8">
+        <p class="text-gray-400 text-sm mb-2">${qz.title} 結果</p>
+        <p class="text-6xl font-black ${gradeColor} mb-2">${grade}</p>
+        <p class="text-3xl font-bold text-white mb-1">${qz.score} / ${total}</p>
+        <p class="text-kcs-400 font-bold text-xl mb-4">${pct}%</p>
+        <p class="text-gray-300 text-sm mb-4">${gradeMsg}</p>
+        <p class="text-xs text-gray-500">所要時間: ${mins}分${secs}秒</p>
+        ${progressBar(pct, pct>=80?'bg-green-500':pct>=60?'bg-kcs-500':'bg-amber-500')}
+      </div>
+      ${wrongQs.length ? `
+        <div class="glass rounded-2xl p-5 text-left">
+          <h3 class="font-bold text-amber-400 mb-3">📋 間違えた問題 (${wrongQs.length}問)</h3>
+          <div class="space-y-2 max-h-60 overflow-y-auto">
+            ${wrongQs.map(a => {
+              const q = QUESTIONS.find(x => x.id === a.id);
+              return `<div class="text-sm border-b border-gray-800 pb-2">
+                <p class="text-gray-300 line-clamp-2">${q.question.replace(/\n/g,' ').slice(0,80)}...</p>
+                <p class="text-xs text-gray-500 mt-1">正解: ${q.answer}</p>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : '<p class="text-green-400 font-bold">🎉 全問正解！完璧です！</p>'}
+      <div class="grid grid-cols-2 gap-3">
+        ${wrongQs.length ? `<button onclick="startWeakReview()" class="py-3 rounded-xl font-bold bg-amber-600/80 hover:bg-amber-600 transition">弱点復習</button>` : ''}
+        <button onclick="state.quiz=null;renderHome()" class="py-3 rounded-xl font-bold bg-kcs-600/80 hover:bg-kcs-600 transition ${wrongQs.length?'':'col-span-2'}">ホームに戻る</button>
+      </div>
+    </div>`;
+  state.quiz = null;
+  renderHeaderStats();
+}
+
+function confirmExitQuiz() {
+  if (confirm('演習を中断しますか？進捗は保存されています。')) {
+    if (state.quiz?.timerInterval) clearInterval(state.quiz.timerInterval);
+    state.quiz = null;
+    renderHome();
+  }
+}
+
+function resetProgress() {
+  if (confirm('すべての学習進捗をリセットしますか？')) {
+    progress = { answered: {}, mockExams: [], streak: 0, lastDate: null };
+    saveProgress(progress);
+    renderHome();
+  }
+}
+
+// ===== Navigation =====
+function goSubject(s) { state.subject = s; renderSubject(s); }
+
+document.getElementById('btn-home').onclick = () => {
+  if (state.quiz) { confirmExitQuiz(); } else { renderHome(); }
+};
+
+// Init
+renderHome();
+</script>
+</body>
+</html>
